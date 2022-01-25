@@ -1,24 +1,33 @@
-<div id="body-content">
-    <slot />
+<div class="body-container">
+    <div id="body-content" class="container is-max-desktop">
+        <slot />
+    </div>
 </div>
 
-<div id="header">Header :D</div>
+<div class="header-container">
+    <div id="header-content" class="container is-max-desktop">Header :D</div>
+</div>
 
 <style>
     :root {
         --header-size: 75px;
     }
 
-    #header {
+    .header-container {
         position: fixed;
         left: 0;
         right: 0;
         top: 0;
         height: var(--header-size);
+    }
+
+    #header-content {
+        width: 100%;
+        height: 100%;
         background-color: rgb(0, 0, 255, 0.1);
     }
 
-    #body-content {
+    .body-container {
         position: absolute;
         top: var(--header-size);
         bottom: 0;
@@ -28,8 +37,12 @@
     }
 
     @media only screen and (max-width: 768px) {
-        #body-content {
+        .body-container {
             top: 0;
         }
+    }
+
+    #body-content {
+        background-color: rgb(255, 0, 0, 0.1);
     }
 </style>

@@ -1,10 +1,8 @@
 :root {
 	--casterlabs: #e94b4b;
 
-	/* --text-color: #363636;
-	--background-color: #ffffff; */
-	--text-color: #dbdbdb;
-	--background-color: #121212;
+	--text-color: #000000;
+	--background-color: #fcfcfc;
 }
 
 html {
@@ -12,6 +10,10 @@ html {
 	background-color: var(--background-color) !important;
 	color: var(--text-color) !important;
 	font-family:  "Manrope", Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+body {
+	margin: 0;
 }
 
 /* Helpers */

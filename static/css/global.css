@@ -2,14 +2,14 @@
 	--casterlabs: #e94b4b;
 
 	--text-color: #000000;
-	--background-color: #fcfcfc;
+	--background-color: #fafafa;
 }
 
 html {
 	overflow: hidden;
 	background-color: var(--background-color) !important;
 	color: var(--text-color) !important;
-	font-family:  "Manrope", Arial, "Helvetica Neue", Helvetica, sans-serif;
+	font-family: "Manrope", Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
 
 body {

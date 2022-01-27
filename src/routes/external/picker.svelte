@@ -6,7 +6,8 @@
 
     const console = createConsole("EmojiPicker");
 
-    let currentCategory = "smileys-and-emotion";
+    let currentCategoryId = "smileys-and-emotion";
+    let currentCategoryName = "Smileys & Emotion";
     let categories = [];
 
     onMount(async () => {
@@ -20,9 +21,8 @@
             console.debug("Category:", categoryInfo);
 
             categories.push(categoryInfo);
+            categories = categories; // Trick svelte.
         }
-
-        categories = categories; // Trick svelte.
     });
 
     async function jsonApiRequest(url) {
@@ -33,12 +33,42 @@
     }
 
     function switchCategory(category) {
-        currentCategory = category;
+        currentCategoryId = category;
 
         document.querySelector(`#category-${category}`).scrollIntoView({
             behavior: "smooth",
             block: "start"
         });
+    }
+
+    function onScroll({ target }) {
+        const scrollTop = target.scrollTop;
+        const categoryElements = document.querySelectorAll(".emoji-category");
+
+        let scrolledCategoryId;
+        let scrolledCategoryName;
+
+        for (const categoryElement of categoryElements) {
+            const categoryNameElement = categoryElement.querySelector(".category-name");
+            let offset = categoryElement.offsetTop;
+
+            if (!categoryNameElement.classList.contains("sticky-category-title")) {
+                offset += categoryNameElement.offsetHeight;
+            }
+
+            if (scrollTop >= offset) {
+                scrolledCategoryId = categoryElement.getAttribute("data-category-id");
+                scrolledCategoryName = categoryNameElement.innerText;
+            }
+        }
+
+        if (scrolledCategoryId) {
+            if (currentCategoryId != scrolledCategoryId) {
+                currentCategoryId = scrolledCategoryId;
+                currentCategoryName = scrolledCategoryName;
+                console.log("Scrolled into view:", currentCategoryId);
+            }
+        }
     }
 </script>
 
@@ -48,19 +78,30 @@
 
 <!-- svelte-ignore a11y-missing-attribute -->
 <div class="picker-container">
-    <!-- <div id="search">search</div> -->
-
-    <div id="emojis">
+    <div id="emojis" on:scroll={onScroll}>
         {#each categories as category}
-            <span class="category-name" id="category-{category.id}">
-                {category.name}
-            </span>
-            {#each category.emojis as emoji}
-                <a on:click={() => console.log(emoji)}>
-                    <img src={emoji.variations[0].assets[EMOJI_PROVIDER].svgUrl} alt="" title={emoji.identifier} class="emoji" onerror="this.parentElement.remove();" />
-                </a>
-            {/each}
-            <br />
+            <div data-category-id={category.id} class="emoji-category">
+                <span
+                    id="category-{category.id}"
+                    class="
+                        category-name 
+                        {currentCategoryId == category.id ? 'sticky-category-title' : ''}
+                    "
+                >
+                    {category.name}
+                </span>
+                {#each category.emojis as emoji}
+                    <a on:click={() => console.log(emoji)}>
+                        <img
+                            src={emoji.variations[0].assets[EMOJI_PROVIDER].svgUrl}
+                            alt=""
+                            title={emoji.identifier}
+                            class="emoji"
+                            onerror="this.parentElement.style.display = 'none'"
+                        />
+                    </a>
+                {/each}
+            </div>
         {/each}
     </div>
 
@@ -68,7 +109,7 @@
         <div class="categories-container">
             <!-- https://api.casterlabs.co/v3/emojis/categories -->
 
-            <a class={currentCategory == "smileys-and-emotion" ? "selected" : ""} on:click={() => switchCategory("smileys-and-emotion")} title="Smileys & Emotion">
+            <a class={currentCategoryId == "smileys-and-emotion" ? "selected" : ""} on:click={() => switchCategory("smileys-and-emotion")} title="Smileys & Emotion">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <circle cx="36" cy="36" r="23" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
@@ -94,7 +135,7 @@
                 </svg>
             </a>
 
-            <a class={currentCategory == "people-and-body" ? "selected" : ""} on:click={() => switchCategory("people-and-body")} title="People & Body">
+            <a class={currentCategoryId == "people-and-body" ? "selected" : ""} on:click={() => switchCategory("people-and-body")} title="People & Body">
                 <svg id="emoji" viewBox="0 0 72 72" version="1.1" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <path
@@ -145,7 +186,7 @@
                 </svg>
             </a>
 
-            <a class={currentCategory == "animals-and-nature" ? "selected" : ""} on:click={() => switchCategory("animals-and-nature")} title="Animals & Nature">
+            <a class={currentCategoryId == "animals-and-nature" ? "selected" : ""} on:click={() => switchCategory("animals-and-nature")} title="Animals & Nature">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <path
@@ -207,7 +248,7 @@
                 </svg>
             </a>
 
-            <a class={currentCategory == "food-and-drink" ? "selected" : ""} on:click={() => switchCategory("food-and-drink")} title="Food & Drink">
+            <a class={currentCategoryId == "food-and-drink" ? "selected" : ""} on:click={() => switchCategory("food-and-drink")} title="Food & Drink">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <g id="line-2">
@@ -240,7 +281,7 @@
                 </svg>
             </a>
 
-            <a class={currentCategory == "travel-and-places" ? "selected" : ""} on:click={() => switchCategory("travel-and-places")} title="Travel & Places">
+            <a class={currentCategoryId == "travel-and-places" ? "selected" : ""} on:click={() => switchCategory("travel-and-places")} title="Travel & Places">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <rect
@@ -286,7 +327,7 @@
                 </svg>
             </a>
 
-            <a class={currentCategory == "activities" ? "selected" : ""} on:click={() => switchCategory("activities")} title="Activities">
+            <a class={currentCategoryId == "activities" ? "selected" : ""} on:click={() => switchCategory("activities")} title="Activities">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <polyline
@@ -359,7 +400,7 @@
                 </svg>
             </a>
 
-            <a class={currentCategory == "objects" ? "selected" : ""} on:click={() => switchCategory("objects")} title="Objects">
+            <a class={currentCategoryId == "objects" ? "selected" : ""} on:click={() => switchCategory("objects")} title="Objects">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="M43.203,23.3918" />
@@ -507,7 +548,7 @@
                 </svg>
             </a>
 
-            <a class={currentCategory == "symbols" ? "selected" : ""} on:click={() => switchCategory("symbols")} title="Symbols">
+            <a class={currentCategoryId == "symbols" ? "selected" : ""} on:click={() => switchCategory("symbols")} title="Symbols">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <path
@@ -549,7 +590,7 @@
                 </svg>
             </a>
 
-            <a class={currentCategory == "flags" ? "selected" : ""} on:click={() => switchCategory("flags")} title="Flags">
+            <a class={currentCategoryId == "flags" ? "selected" : ""} on:click={() => switchCategory("flags")} title="Flags">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <path
@@ -594,19 +635,9 @@
         height: 1.15em;
     }
 
-    #search {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: var(--section-height);
-        /* background-color: rgb(255, 0, 0, 0.1); */
-    }
-
     #emojis {
         position: absolute;
-        /* top: var(--section-height); */
-        top: 6px;
+        top: 22px;
         bottom: var(--section-height);
         padding-left: 8px;
         padding-right: 8px;
@@ -624,6 +655,12 @@
         right: 0;
         height: var(--section-height);
         /* background-color: rgb(0, 0, 255, 0.1); */
+    }
+
+    .sticky-category-title {
+        position: fixed;
+        top: 2px;
+        left: 8px;
     }
 
     .categories-container {

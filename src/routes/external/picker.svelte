@@ -650,7 +650,7 @@
 
     #emojis {
         position: absolute;
-        top: 22px;
+        top: 24px;
         bottom: var(--section-height);
         padding-left: 8px;
         padding-right: 8px;

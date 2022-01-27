@@ -39,7 +39,10 @@
     function switchCategory(category) {
         currentCategoryId = category;
 
-        document.querySelector(`#category-${category}`).scrollIntoView({
+        const categoryElement = document.querySelector(`#category-${category}`);
+        const firstChildBelowTheTitle = categoryElement.querySelector(".emoji");
+
+        firstChildBelowTheTitle.scrollIntoView({
             behavior: "smooth",
             block: "start"
         });
@@ -84,9 +87,8 @@
 <div class="picker-container">
     <div id="emojis" on:scroll={onScroll}>
         {#each categories as category}
-            <div data-category-id={category.id} class="emoji-category">
+            <div class="emoji-category" data-category-id={category.id} id="category-{category.id}">
                 <span
-                    id="category-{category.id}"
                     class="
                         category-name 
                         {currentCategoryId == category.id ? 'sticky-category-title' : ''}

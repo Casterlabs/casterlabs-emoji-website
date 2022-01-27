@@ -580,7 +580,7 @@
     }
 
     #categories svg:hover {
-        filter: invert(0.85);
+        filter: invert(0.65);
     }
 
     #categories .selected svg {

@@ -2,14 +2,43 @@
     import { onMount } from "svelte";
     import createConsole from "../../components/console-helper.mjs";
 
+    const EMOJI_PROVIDER = "noto-emoji";
+
     const console = createConsole("EmojiPicker");
 
-    onMount(() => {
+    let currentCategory = "smileys-and-emotion";
+    let categories = [];
+
+    onMount(async () => {
         console.debug("Mounted!");
+
+        const listOfCategoryNames = await jsonApiRequest("https://api.casterlabs.co/v3/emojis/categories");
+        console.debug("Categories:", listOfCategoryNames);
+
+        for (const category of listOfCategoryNames) {
+            const categoryInfo = await jsonApiRequest(`https://api.casterlabs.co/v3/emojis/category/${category}`);
+            console.debug("Category:", categoryInfo);
+
+            categories.push(categoryInfo);
+        }
+
+        categories = categories; // Trick svelte.
     });
 
+    async function jsonApiRequest(url) {
+        const response = await fetch(url);
+        const json = await response.json();
+
+        return json;
+    }
+
     function switchCategory(category) {
-        console.debug("Switch:", category);
+        currentCategory = category;
+
+        document.querySelector(`#category-${category}`).scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
     }
 </script>
 
@@ -19,13 +48,27 @@
 
 <!-- svelte-ignore a11y-missing-attribute -->
 <div class="picker-container">
-    <div id="search">search</div>
-    <div id="emojis">picker.</div>
+    <!-- <div id="search">search</div> -->
+
+    <div id="emojis">
+        {#each categories as category}
+            <span class="category-name" id="category-{category.id}">
+                {category.name}
+            </span>
+            {#each category.emojis as emoji}
+                <a on:click={() => console.log(emoji)}>
+                    <img src={emoji.variations[0].assets[EMOJI_PROVIDER].svgUrl} alt="" title={emoji.identifier} class="emoji" onerror="this.parentElement.remove();" />
+                </a>
+            {/each}
+            <br />
+        {/each}
+    </div>
+
     <div id="categories">
         <div class="categories-container">
             <!-- https://api.casterlabs.co/v3/emojis/categories -->
 
-            <a class="selected" on:click={() => switchCategory("smileys-and-emotion")} title="Smileys & Emotion">
+            <a class={currentCategory == "smileys-and-emotion" ? "selected" : ""} on:click={() => switchCategory("smileys-and-emotion")} title="Smileys & Emotion">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <circle cx="36" cy="36" r="23" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
@@ -51,7 +94,7 @@
                 </svg>
             </a>
 
-            <a on:click={() => switchCategory("people-and-body")} title="People & Body">
+            <a class={currentCategory == "people-and-body" ? "selected" : ""} on:click={() => switchCategory("people-and-body")} title="People & Body">
                 <svg id="emoji" viewBox="0 0 72 72" version="1.1" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <path
@@ -102,7 +145,7 @@
                 </svg>
             </a>
 
-            <a on:click={() => switchCategory("animals-and-nature")} title="Animals & Nature">
+            <a class={currentCategory == "animals-and-nature" ? "selected" : ""} on:click={() => switchCategory("animals-and-nature")} title="Animals & Nature">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <path
@@ -164,7 +207,7 @@
                 </svg>
             </a>
 
-            <a on:click={() => switchCategory("food-and-drink")} title="Food & Drink">
+            <a class={currentCategory == "food-and-drink" ? "selected" : ""} on:click={() => switchCategory("food-and-drink")} title="Food & Drink">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <g id="line-2">
@@ -197,7 +240,7 @@
                 </svg>
             </a>
 
-            <a on:click={() => switchCategory("travel-and-places")} title="Travel & Places">
+            <a class={currentCategory == "travel-and-places" ? "selected" : ""} on:click={() => switchCategory("travel-and-places")} title="Travel & Places">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <rect
@@ -243,7 +286,7 @@
                 </svg>
             </a>
 
-            <a on:click={() => switchCategory("activities")} title="Activities">
+            <a class={currentCategory == "activities" ? "selected" : ""} on:click={() => switchCategory("activities")} title="Activities">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <polyline
@@ -316,7 +359,7 @@
                 </svg>
             </a>
 
-            <a on:click={() => switchCategory("objects")} title="Objects">
+            <a class={currentCategory == "objects" ? "selected" : ""} on:click={() => switchCategory("objects")} title="Objects">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="M43.203,23.3918" />
@@ -464,7 +507,7 @@
                 </svg>
             </a>
 
-            <a on:click={() => switchCategory("symbols")} title="Symbols">
+            <a class={currentCategory == "symbols" ? "selected" : ""} on:click={() => switchCategory("symbols")} title="Symbols">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <path
@@ -506,7 +549,7 @@
                 </svg>
             </a>
 
-            <a on:click={() => switchCategory("flags")} title="Flags">
+            <a class={currentCategory == "flags" ? "selected" : ""} on:click={() => switchCategory("flags")} title="Flags">
                 <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
                     <g id="line">
                         <path
@@ -535,22 +578,43 @@
         --section-height: 35px;
     }
 
+    .category-name {
+        display: block;
+        font-size: 0.75em;
+        line-height: 1.75em;
+        transform: translateX(2px);
+        text-transform: uppercase;
+        color: lightgray;
+    }
+
+    .emoji {
+        object-fit: contain;
+        margin: 1px;
+        width: 1.15em;
+        height: 1.15em;
+    }
+
     #search {
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: var(--section-height);
-        background-color: rgb(255, 0, 0, 0.1);
+        /* background-color: rgb(255, 0, 0, 0.1); */
     }
 
     #emojis {
         position: absolute;
-        top: var(--section-height);
+        /* top: var(--section-height); */
+        top: 6px;
         bottom: var(--section-height);
-        left: 0;
-        right: 0;
-        background-color: rgb(0, 255, 0, 0.1);
+        padding-left: 8px;
+        padding-right: 8px;
+        width: fit-content;
+        margin: auto;
+        /* background-color: rgb(0, 255, 0, 0.1); */
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     #categories {
@@ -593,11 +657,16 @@
         top: 0;
         left: 0;
         width: 270px;
-        height: 390px;
+        height: 365px;
         color: var(--text-color);
         border-radius: 10px;
-        border: 1px solid gray;
-        backdrop-filter: blur(25px);
-        background-color: rgb(0, 0, 0, 0.45);
+        border: 1px solid rgba(128, 128, 128, 0.3);
+        backdrop-filter: blur(15px);
+        background-color: rgb(0, 0, 0, 0.3);
+    }
+
+    :global(body) {
+        background-image: url(https://picsum.photos/400);
+        background-repeat: no-repeat;
     }
 </style>

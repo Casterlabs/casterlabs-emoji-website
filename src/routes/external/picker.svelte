@@ -2,13 +2,17 @@
     import { onMount } from "svelte";
     import createConsole from "../../components/console-helper.mjs";
 
-    const EMOJI_PROVIDER = "noto-emoji";
+    const EMOJI_PROVIDER = "twemoji";
 
     const console = createConsole("EmojiPicker");
 
     let currentCategoryId = "smileys-and-emotion";
     let currentCategoryName = "Smileys & Emotion";
     let categories = [];
+
+    function input(emojiData) {
+        console.log(emojiData);
+    }
 
     onMount(async () => {
         console.debug("Mounted!");
@@ -91,15 +95,22 @@
                     {category.name}
                 </span>
                 {#each category.emojis as emoji}
-                    <a on:click={() => console.log(emoji)}>
-                        <img
-                            src={emoji.variations[0].assets[EMOJI_PROVIDER].svgUrl}
-                            alt=""
-                            title={emoji.identifier}
-                            class="emoji"
-                            onerror="this.parentElement.style.display = 'none'"
-                        />
-                    </a>
+                    <!-- Check and make sure the emoji is supported before we try to load it. -->
+                    {#if emoji.variations[0].assets[EMOJI_PROVIDER].supported}
+                        <!-- 
+                            We also include a handler that hides the input just incase the emoji isn't actually valid.
+                            This is getting fixed on the server soon. 
+                        -->
+                        <a on:click={() => input(emoji)}>
+                            <img
+                                src={emoji.variations[0].assets[EMOJI_PROVIDER].pngUrl}
+                                alt=""
+                                title={emoji.identifier}
+                                class="emoji"
+                                onerror="this.parentElement.style.display = 'none'"
+                            />
+                        </a>
+                    {/if}
                 {/each}
             </div>
         {/each}
@@ -630,9 +641,9 @@
 
     .emoji {
         object-fit: contain;
-        margin: 1px;
-        width: 1.15em;
-        height: 1.15em;
+        margin: 2px;
+        width: 1.3em;
+        height: 1.3em;
     }
 
     #emojis {

@@ -715,6 +715,29 @@
         background-color: rgb(0, 0, 0, 0.3);
     }
 
+    /* Scroll Bar */
+
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+        height: 30px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    /* Debug */
+
     :global(body) {
         background-image: url(https://picsum.photos/400);
         background-repeat: no-repeat;

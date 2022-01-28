@@ -636,7 +636,7 @@
         display: block;
         font-size: 0.75em;
         line-height: 1.75em;
-        transform: translateX(2px);
+        transform: translateX(4px);
         text-transform: uppercase;
         color: lightgray;
     }
@@ -652,8 +652,8 @@
         position: absolute;
         top: 24px;
         bottom: var(--section-height);
-        padding-left: 8px;
-        padding-right: 8px;
+        padding-left: 10px;
+        padding-right: 0;
         width: fit-content;
         margin: auto;
         /* background-color: rgb(0, 255, 0, 0.1); */
@@ -706,7 +706,7 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 270px;
+        width: 280px;
         height: 365px;
         color: var(--text-color);
         border-radius: 10px;

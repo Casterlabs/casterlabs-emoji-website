@@ -10,8 +10,10 @@
     let currentCategoryName = "Smileys & Emotion";
     let categories = [];
 
-    function input(emojiData) {
-        console.log(emojiData);
+    function input(emojiData, _variation) {
+        const variation = _variation || emojiData.variations[0]; // TODO swap variations on the fly. ugh.
+
+        console.log("Clicked emoji:", variation);
     }
 
     onMount(async () => {
@@ -96,21 +98,22 @@
                     {category.name}
                 </span>
                 {#each category.emojis as emoji}
-                    <!-- Check and make sure the emoji is supported before we try to load it. -->
-                    {#if emoji.variations[0].assets[EMOJI_PROVIDER].supported}
-                        <!-- 
-                            We also include a handler that hides the input just incase the emoji isn't actually valid.
-                            This is getting fixed on the server soon. 
-                        -->
-                        <a on:click={() => input(emoji)}>
-                            <img
-                                src={emoji.variations[0].assets[EMOJI_PROVIDER].pngUrl}
-                                alt=""
-                                title={emoji.identifier}
-                                class="emoji"
-                                onerror="this.parentElement.style.display = 'none'"
-                            />
-                        </a>
+                    <!-- Flags need to be handled differently -->
+                    {#if emoji.identifier == "flag"}
+                        {#each emoji.variations as flag}
+                            {#if flag.assets[EMOJI_PROVIDER].supported}
+                                <a on:click={() => input(emoji, flag)}>
+                                    <img src={flag.assets[EMOJI_PROVIDER].pngUrl} alt="" title={flag.name} class="emoji" />
+                                </a>
+                            {/if}
+                        {/each}
+                    {:else}
+                        <!-- Check and make sure the emoji is supported before we try to load it. -->
+                        {#if emoji.variations[0].assets[EMOJI_PROVIDER].supported}
+                            <a on:click={() => input(emoji)}>
+                                <img src={emoji.variations[0].assets[EMOJI_PROVIDER].pngUrl} alt="" title={emoji.identifier} class="emoji" />
+                            </a>
+                        {/if}
                     {/if}
                 {/each}
             </div>

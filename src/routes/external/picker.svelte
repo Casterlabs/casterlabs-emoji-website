@@ -741,4 +741,8 @@
         background-image: url(https://picsum.photos/400);
         background-repeat: no-repeat;
     }
+
+    .picker-container {
+        transform: translate(15px, 15px);
+    }
 </style>

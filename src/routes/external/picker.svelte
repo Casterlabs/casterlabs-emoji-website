@@ -72,7 +72,7 @@
             if (currentCategoryId != scrolledCategoryId) {
                 currentCategoryId = scrolledCategoryId;
                 currentCategoryName = scrolledCategoryName;
-                console.log("Scrolled into view:", currentCategoryId);
+                console.debug("Scrolled into view:", currentCategoryId);
             }
         }
     }

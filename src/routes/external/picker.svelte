@@ -37,14 +37,13 @@
     }
 
     function switchCategory(category) {
-        currentCategoryId = category;
-
         const categoryElement = document.querySelector(`#category-${category}`);
         const firstChildBelowTheTitle = categoryElement.querySelector(".emoji");
 
         firstChildBelowTheTitle.scrollIntoView({
             behavior: "smooth",
-            block: "start"
+            block: "start",
+            inline: "start"
         });
     }
 

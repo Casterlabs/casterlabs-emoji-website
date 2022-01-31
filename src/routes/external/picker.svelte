@@ -10,10 +10,15 @@
     let currentCategoryName = "Smileys & Emotion";
     let categories = [];
 
-    function input(emojiData, _variation) {
-        const variation = _variation || emojiData.variations[0]; // TODO swap variations on the fly. ugh.
+    function input(emoji, _variation) {
+        const variation = _variation || emoji.variations[0]; // TODO swap variations on the fly. ugh.
 
-        console.log("Clicked emoji:", variation);
+        window.parent.postMessage({
+            from: "emoji-picker",
+            type: "input",
+            emoji: emoji,
+            variation: variation
+        });
     }
 
     onMount(async () => {
@@ -738,14 +743,18 @@
         background: rgba(0, 0, 0, 0.4);
     }
 
+    :global(body) {
+        background-color: transparent !important;
+    }
+
     /* Debug */
 
-    :global(body) {
+    /* :global(body) {
         background-image: url(https://picsum.photos/400);
         background-repeat: no-repeat;
     }
 
     .picker-container {
         transform: translate(15px, 15px);
-    }
+    } */
 </style>

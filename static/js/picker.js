@@ -1,11 +1,25 @@
 
 export default class {
 
-    constructor(iframe) {
+    constructor(iframe, id = "emoji-picker") {
         this.iframe = iframe;
+        this.id = id;
 
         this.iframe.width = 280;
         this.iframe.height = 365;
+
+        const instance = this;
+
+        this.onMessage = ({ data }) => {
+            if (data.from == instance.id) {
+                const type = data.type;
+
+                delete data.type;
+                delete data.from;
+
+                instance.broadcast(type, data);
+            }
+        };
 
         window.addEventListener("message", this.onMessage);
 
@@ -25,23 +39,8 @@ export default class {
         });
     }
 
-    onMessage({ data }) {
-        if (data.from == "emoji-picker") {
-            const type = data.type;
-
-            delete data.type;
-            delete data.form;
-
-            this.broadcast(type, data);
-        }
-    }
-
     close() {
-        this.iframe.postMessage({
-            type: "close"
-        });
-
-        this.frame
+        // this.frame?.remove();
         window.removeEventListener("message", this.onMessage);
     }
 

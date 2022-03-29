@@ -1,8 +1,13 @@
 <script>
     import { onMount } from "svelte";
     import createConsole from "../../components/console-helper.mjs";
+    import getQueryParams from "../../components/query-params.mjs";
 
-    const EMOJI_PROVIDER = "twemoji";
+    let emojiProvider = "twemoji";
+    let uniqueId = "emoji-picker";
+
+    let customEmojiData = {};
+    let enableCustomEmojis = false;
 
     const console = createConsole("EmojiPicker");
 
@@ -10,26 +15,67 @@
     let currentCategoryName = "Smileys & Emotion";
     let categories = [];
 
-    function input(emoji, _variation) {
-        const variation = _variation || emoji.variations[0]; // TODO swap variations on the fly. ugh.
+    function input(emoji, _variation, isCustom = false) {
+        let variation;
 
-        window.parent.postMessage({
-            from: "emoji-picker",
+        if (!isCustom) {
+            variation = _variation || emoji.variations[0]; // TODO swap variations on the fly. ugh.
+        }
+
+        const payload = {
+            from: uniqueId,
             type: "input",
             emoji: emoji,
-            variation: variation
-        });
+            variation: variation,
+            isCustom: isCustom
+        };
+
+        console.debug("Picked:", variation?.sequence || emoji.name, payload);
+        window.parent.postMessage(payload);
     }
 
     onMount(async () => {
+        const queryParams = getQueryParams();
+
+        emojiProvider = queryParams.emojiProvider || emojiProvider;
+        uniqueId = queryParams.uniqueId || uniqueId;
+
+        const customEmojisUrl = queryParams.customEmojisUrl;
+        enableCustomEmojis = customEmojisUrl !== undefined;
+
         console.debug("Mounted!");
 
         const listOfCategoryNames = await jsonApiRequest("https://api.casterlabs.co/v3/emojis/categories");
-        console.debug("Categories:", listOfCategoryNames);
+        // console.debug("Categories:", listOfCategoryNames);
+
+        if (customEmojisUrl) {
+            try {
+                customEmojiData = await jsonApiRequest(customEmojisUrl);
+                console.debug("Custom Emojis:", customEmojiData);
+
+                currentCategoryId = "custom";
+                currentCategoryName = customEmojiData.name;
+
+                // Expected emoji format:
+                // [{ identifier: "...", imageUrl: "..." }]
+
+                categories.push({
+                    id: "custom",
+                    name: customEmojiData.name,
+                    emojis: customEmojiData.emojis,
+                    subcategories: []
+                });
+                categories = categories; // Trick svelte, again.
+            } catch (e) {
+                console.error("An error occurred whilst loading custom emojis:", e);
+                alert("An error occurred whilst loading custom emojis. Please check the console for more details.");
+                enableCustomEmojis = false;
+            }
+        }
 
         for (const category of listOfCategoryNames) {
             const categoryInfo = await jsonApiRequest(`https://api.casterlabs.co/v3/emojis/category/${category}`);
-            console.debug("Category:", categoryInfo);
+            // console.debug("Category:", categoryInfo);
 
             categories.push(categoryInfo);
             categories = categories; // Trick svelte.
@@ -90,43 +136,84 @@
 </svelte:head>
 
 <!-- svelte-ignore a11y-missing-attribute -->
-<div class="picker-container">
+<div class="picker-container" class:enable-custom-emojis={enableCustomEmojis}>
     <div id="emojis" on:scroll={onScroll}>
         {#each categories as category}
             <div class="emoji-category" data-category-id={category.id} id="category-{category.id}">
-                <span
-                    class="
-                        category-name 
-                        {currentCategoryId == category.id ? 'sticky-category-title' : ''}
-                    "
-                >
+                <span class="category-name" class:sticky-category-title={currentCategoryId == category.id}>
                     {category.name}
                 </span>
-                {#each category.emojis as emoji}
-                    <!-- Flags need to be handled differently -->
-                    {#if emoji.identifier == "flag"}
-                        {#each emoji.variations as flag}
-                            {#if flag.assets[EMOJI_PROVIDER].supported}
-                                <a on:click={() => input(emoji, flag)}>
-                                    <img src={flag.assets[EMOJI_PROVIDER].pngUrl} alt="" title={flag.name} class="emoji" />
+                {#if category.id == "custom"}
+                    {#each category.emojis as emoji}
+                        <a on:click={() => input(emoji, null, true)}>
+                            <img src={emoji.imageUrl} alt="" title={emoji.name} class="emoji" />
+                        </a>
+                    {/each}
+                {:else}
+                    {#each category.emojis as emoji}
+                        <!-- Flags need to be handled differently -->
+                        {#if emoji.identifier == "flag"}
+                            {#each emoji.variations as flag}
+                                {#if flag.assets[emojiProvider].supported}
+                                    <a on:click={() => input(emoji, flag)}>
+                                        <img src={flag.assets[emojiProvider].svgUrl || flag.assets[emojiProvider].pngUrl} alt="" title={flag.name} class="emoji" />
+                                    </a>
+                                {/if}
+                            {/each}
+                        {:else}
+                            <!-- Check and make sure the emoji is supported before we try to load it. -->
+                            {#if emoji.variations[0].assets[emojiProvider].supported}
+                                <a on:click={() => input(emoji)}>
+                                    <img
+                                        src={emoji.variations[0].assets[emojiProvider].svgUrl || emoji.variations[0].assets[emojiProvider].pngUrl}
+                                        alt=""
+                                        title={emoji.name}
+                                        class="emoji"
+                                    />
                                 </a>
                             {/if}
-                        {/each}
-                    {:else}
-                        <!-- Check and make sure the emoji is supported before we try to load it. -->
-                        {#if emoji.variations[0].assets[EMOJI_PROVIDER].supported}
-                            <a on:click={() => input(emoji)}>
-                                <img src={emoji.variations[0].assets[EMOJI_PROVIDER].pngUrl} alt="" title={emoji.identifier} class="emoji" />
-                            </a>
                         {/if}
-                    {/if}
-                {/each}
+                    {/each}
+                {/if}
             </div>
         {/each}
     </div>
 
     <div id="categories">
         <div class="categories-container">
+            {#if enableCustomEmojis}
+                <a class={currentCategoryId == "custom" ? "selected" : ""} on:click={() => switchCategory("custom")} title={customEmojiData.name}>
+                    <svg id="emoji" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+                        <g id="line">
+                            <polyline
+                                fill="none"
+                                stroke="#000000"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-miterlimit="10"
+                                stroke-width="2.069"
+                                points="35.6352,54.0172 57.4698,48.7313 57.4698,21.7647 35.6167,26.5155 13.7667,21.7647 13.7667,48.7313 35.6013,54.0172 35.6013,30.3713"
+                            />
+                            <polyline
+                                fill="none"
+                                stroke="#000000"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-miterlimit="10"
+                                stroke-width="2.069"
+                                points="13.7667,21.7647 35.8082,16.4545 57.4698,21.7647"
+                            />
+                            <circle cx="21.2735" cy="32.9339" r="3" />
+                            <circle cx="27.2446" cy="44.3761" r="3" />
+                            <circle cx="41.767" cy="45.2211" r="3" />
+                            <circle cx="46.8274" cy="38.0668" r="3" />
+                            <circle cx="51.8878" cy="30.9124" r="3" />
+                            <ellipse cx="35.8312" cy="21.1219" rx="4" ry="1.6191" />
+                        </g>
+                    </svg>
+                </a>
+            {/if}
+
             <!-- https://api.casterlabs.co/v3/emojis/categories -->
 
             <a class={currentCategoryId == "smileys-and-emotion" ? "selected" : ""} on:click={() => switchCategory("smileys-and-emotion")} title="Smileys & Emotion">
@@ -649,10 +736,14 @@
     }
 
     .emoji {
+        --size: 1.5em;
+
         object-fit: contain;
         margin: 2px;
-        width: 1.3em;
-        height: 1.3em;
+        width: var(--size);
+        height: var(--size);
+        image-rendering: pixelated;
+        image-rendering: -webkit-optimize-contrast;
     }
 
     #emojis {
@@ -720,6 +811,10 @@
         border: 1px solid rgba(128, 128, 128, 0.3);
         backdrop-filter: blur(15px);
         background-color: rgb(0, 0, 0, 0.3);
+    }
+
+    .picker-container.enable-custom-emojis {
+        width: 313px !important;
     }
 
     /* Scroll Bar */

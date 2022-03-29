@@ -1,0 +1,9 @@
+{
+    "name": "Example Custom Emojis",
+    "emojis": [
+        {
+            "name": "Casterlabs",
+            "imageUrl": "https://cdn.casterlabs.co/branding/casterlabs/icon.png"
+        }
+    ]
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example</title>
+    <style>
+        #picker-default {
+            width: 280px;
+            height: 365px;
+        }
+
+        #picker-custom {
+            width: 313px;
+            height: 365px;
+        }
+
+        iframe {
+            border: none;
+            /* Just to space them apart */
+            margin: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <iframe id="picker-default" src="https://emoji.casterlabs.co/external/picker?emojiProvider=twemoji"></iframe>
+
+    <iframe id="picker-custom" src="https://emoji.casterlabs.co/external/picker?emojiProvider=noto-emoji&customEmojisUrl=https://emoji.casterlabs.co/example_custom_emojis.json"></iframe>
+
+    <script type="module">
+        import Picker from "https://emoji.casterlabs.co/js/picker.js";
+
+        const pickerDefault = new Picker(document.querySelector("#picker-default"));
+
+        pickerDefault.on("input", (data) => {
+            console.log("Picker: ", data);
+        });
+
+    </script>
+</body>
+
+</html>

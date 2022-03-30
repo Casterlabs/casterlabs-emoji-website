@@ -2,6 +2,8 @@
     import TextSnippet from "../components/TextSnippet.svelte";
     import { onDestroy, onMount } from "svelte";
 
+    const backgroundEmojis = ["📍", "🃏", "🏠", "🚲", "🔔", "😎", "⭐", "😡", "🌈", "😇", "☔", "🚀", "⚡", "🤖", "🔥", "✨", "🎉", "🔮", "💔", "💦"];
+
     let emojiProvider = "noto-emoji";
 
     let frame;
@@ -24,7 +26,25 @@
     });
 </script>
 
-<div id="emoji-background" />
+<div id="emoji-background">
+    <div
+        style="
+            --size: 256px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(0, min(100%/2, max(var(--size), 100%/50))));
+            grid-template-rows: auto;
+            grid-column-gap: 50px;
+            grid-row-gap: 50px;
+            justify-content: center;
+        "
+    >
+        {#each backgroundEmojis as emoji}
+            <div style="font-size: calc(var(--size) / 2); text-align: center; width: var(--size); max-width: 100%">
+                <TextSnippet {emojiProvider}>{emoji}</TextSnippet>
+            </div>
+        {/each}
+    </div>
+</div>
 
 <div id="actual-content" class="container is-max-desktop">
     <section style="margin-top: 6em;">
@@ -112,12 +132,11 @@
         bottom: 0;
         left: 0;
         right: 0;
-        opacity: 0.75;
-        background-color: green;
+        opacity: 0.45;
     }
 
     section {
-        margin: 15px;
+        margin: 20px;
     }
 
     h1 {

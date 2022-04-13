@@ -241,12 +241,16 @@
                                             e.preventDefault();
                                             openContextMenu(emoji);
                                         }}
-                                        on:longpress={(e) => {
-                                            e.preventDefault();
-                                            openContextMenu(emoji);
-                                        }}
+                                        data-long-press-delay="1000"
                                     >
                                         <img
+                                            on:load={(loadEvent) => {
+                                                loadEvent.target.parentElement.addEventListener("long-press", (e) => {
+                                                    e.preventDefault();
+                                                    console.debug("Long press!");
+                                                    openContextMenu(emoji);
+                                                });
+                                            }}
                                             src={emoji.variations[userVariations[emoji.variations.def.sequence] || "def"]?.assets[emojiProvider].svgUrl ||
                                                 emoji.variations["def"].assets[emojiProvider].svgUrl}
                                             alt=""

@@ -926,6 +926,7 @@
         border: 1px solid rgba(128, 128, 128, 0.3);
         backdrop-filter: blur(15px);
         background-color: rgb(0, 0, 0, 0.3);
+        user-select: none;
     }
 
     .picker-container.enable-custom-emojis {

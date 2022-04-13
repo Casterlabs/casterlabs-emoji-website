@@ -195,6 +195,7 @@
 
 <svelte:head>
     <title>Emoji Picker</title>
+    <script src="/js/long-press-event.min.js"></script>
 </svelte:head>
 
 <!-- svelte-ignore a11y-missing-attribute -->
@@ -237,6 +238,10 @@
                                             input(emoji, variation);
                                         }}
                                         on:contextmenu={(e) => {
+                                            e.preventDefault();
+                                            openContextMenu(emoji);
+                                        }}
+                                        on:longpress={(e) => {
                                             e.preventDefault();
                                             openContextMenu(emoji);
                                         }}
@@ -926,10 +931,11 @@
         border: 1px solid rgba(128, 128, 128, 0.3);
         backdrop-filter: blur(15px);
         background-color: rgb(0, 0, 0, 0.3);
-        user-select: none;
     }
 
     .picker-container * {
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
         user-select: none;
     }
 

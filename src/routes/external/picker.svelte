@@ -15,12 +15,50 @@
     let currentCategoryName = "Smileys & Emotion";
     let categories = [];
 
-    function input(emoji, _variation, isCustom = false) {
-        let variation;
+    let contextMenuOpenOn = null;
+    let contextMenuOffset = 0;
+    let contextMenuRemoveBRR = false;
+    let contextMenuElement = null;
 
-        if (!isCustom) {
-            variation = _variation || emoji.variations[0]; // TODO swap variations on the fly. ugh.
+    let userVariations = {};
+
+    $: contextMenuElement, positionContextMenu();
+
+    function positionContextMenu() {
+        if (contextMenuElement) {
+            const parentWidth = contextMenuElement.parentElement.parentElement.offsetWidth;
+            const elementRootLeft = contextMenuElement.parentElement.offsetLeft;
+            const width = contextMenuElement.querySelector(".emoji-context-menu").offsetWidth;
+
+            contextMenuRemoveBRR = false;
+
+            if (elementRootLeft < 60) {
+                contextMenuOffset = parentWidth - width - 30 - elementRootLeft;
+            } else if (parentWidth - elementRootLeft < 100) {
+                contextMenuOffset = -(elementRootLeft - width) - 12;
+                contextMenuRemoveBRR = contextMenuOffset < -50;
+            } else {
+                contextMenuOffset = 0;
+            }
+
+            console.log("width:", width, "elementRootLeft: ", elementRootLeft, "parentWidth:", parentWidth, "contextMenuOffset:", contextMenuOffset);
         }
+    }
+
+    function openContextMenu(emoji) {
+        if (Object.values(emoji.variations).filter((variation) => variation.assets[emojiProvider].supported).length > 2) {
+            // If an emoji only has one variation, we don't need to show the context menu. (`def` is a duplicate entry)
+            contextMenuOpenOn = emoji.variations.def.sequence;
+            console.debug("context", contextMenuOpenOn);
+        }
+    }
+
+    function closeContextMenu() {
+        contextMenuOpenOn = null;
+    }
+
+    function input(emoji, variation, isCustom = false) {
+        contextMenuOpenOn = null;
 
         const payload = {
             from: uniqueId,
@@ -34,6 +72,11 @@
         window.parent.postMessage(payload);
     }
 
+    function save() {
+        localStorage.setItem("cl_emoji:variations", JSON.stringify(userVariations));
+        userVariations = userVariations; // Rerender.
+    }
+
     onMount(async () => {
         const queryParams = getQueryParams();
 
@@ -42,6 +85,10 @@
 
         const customEmojisUrl = queryParams.customEmojisUrl;
         enableCustomEmojis = customEmojisUrl !== undefined;
+
+        try {
+            userVariations = JSON.parse(localStorage.getItem("cl_emoji:variations")) || {};
+        } catch (ignored) {}
 
         console.debug("Mounted!");
 
@@ -75,7 +122,22 @@
 
         for (const category of listOfCategoryNames) {
             const categoryInfo = await jsonApiRequest(`https://api.casterlabs.co/v3/emojis/category/${category}`);
-            // console.debug("Category:", categoryInfo);
+
+            for (const emoji of categoryInfo.emojis) {
+                const variationsMap = {};
+
+                for (const variation of emoji.variations) {
+                    if (!variationsMap.def) {
+                        variationsMap.def = variation;
+                    }
+
+                    variationsMap[variation.sequence] = variation;
+                }
+
+                emoji.variations = variationsMap;
+            }
+
+            console.debug("Category:", categoryInfo);
 
             categories.push(categoryInfo);
             categories = categories; // Trick svelte.
@@ -151,9 +213,9 @@
                     {/each}
                 {:else}
                     {#each category.emojis as emoji}
-                        <!-- Flags need to be handled differently -->
                         {#if emoji.identifier == "flag"}
-                            {#each emoji.variations as flag}
+                            <!-- Flags need to be handled differently -->
+                            {#each Object.values(emoji.variations) as flag}
                                 {#if flag.assets[emojiProvider].supported}
                                     <a on:click={() => input(emoji, flag)}>
                                         <img src={flag.assets[emojiProvider].svgUrl || flag.assets[emojiProvider].pngUrl} alt="" title={flag.name} class="emoji" />
@@ -162,15 +224,62 @@
                             {/each}
                         {:else}
                             <!-- Check and make sure the emoji is supported before we try to load it. -->
-                            {#if emoji.variations[0].assets[emojiProvider].supported}
-                                <a on:click={() => input(emoji)}>
-                                    <img
-                                        src={emoji.variations[0].assets[emojiProvider].svgUrl || emoji.variations[0].assets[emojiProvider].pngUrl}
-                                        alt=""
-                                        title={emoji.name}
-                                        class="emoji"
-                                    />
-                                </a>
+                            {#if emoji.variations.def.assets[emojiProvider].supported}
+                                <span class="emoji-container">
+                                    <a
+                                        on:click={() => {
+                                            let variation = emoji.variations[userVariations[emoji.variations.def.sequence] || "def"];
+
+                                            if (!variation.assets[emojiProvider].supported) {
+                                                variation = emoji.variations.def;
+                                            }
+
+                                            input(emoji, variation);
+                                        }}
+                                        on:contextmenu={(e) => {
+                                            e.preventDefault();
+                                            openContextMenu(emoji);
+                                        }}
+                                    >
+                                        <img
+                                            src={emoji.variations[userVariations[emoji.variations.def.sequence] || "def"]?.assets[emojiProvider].svgUrl ||
+                                                emoji.variations["def"].assets[emojiProvider].svgUrl}
+                                            alt=""
+                                            title={emoji.name}
+                                            class="emoji"
+                                        />
+                                    </a>
+
+                                    {#if contextMenuOpenOn == emoji.variations.def.sequence}
+                                        <span
+                                            bind:this={contextMenuElement}
+                                            class="emoji-context-menu-container"
+                                            class:remove-brr={contextMenuRemoveBRR}
+                                            style="--shift: {contextMenuOffset}px;"
+                                        >
+                                            <!-- svelte-ignore a11y-autofocus -->
+                                            <ul class="emoji-context-menu" on:blur={closeContextMenu} autofocus tabindex="0">
+                                                {#each Object.entries(emoji.variations) as [key, variation]}
+                                                    {#if key != "def" && variation.assets[emojiProvider].supported}
+                                                        <li>
+                                                            <a
+                                                                on:click={() => {
+                                                                    userVariations[emoji.variations.def.sequence] = variation.sequence;
+                                                                    closeContextMenu();
+                                                                    save();
+                                                                    input(emoji, variation);
+                                                                }}
+                                                            >
+                                                                <img src={variation.assets[emojiProvider].svgUrl} alt="" title={emoji.name} class="emoji" />
+                                                            </a>
+                                                        </li>
+                                                    {/if}
+                                                {/each}
+                                                <span class="bottom-arrow" />
+                                            </ul>
+                                        </span>
+                                    {/if}
+                                </span>
                             {/if}
                         {/if}
                     {/each}
@@ -742,8 +851,10 @@
         margin: 2px;
         width: var(--size);
         height: var(--size);
+        z-index: 750;
         image-rendering: pixelated;
         image-rendering: -webkit-optimize-contrast;
+        image-rendering: -moz-crisp-edges;
     }
 
     #emojis {
@@ -757,6 +868,10 @@
         /* background-color: rgb(0, 255, 0, 0.1); */
         overflow-y: auto;
         overflow-x: hidden;
+    }
+
+    .emoji-category {
+        position: relative;
     }
 
     #categories {
@@ -840,6 +955,52 @@
 
     :global(body) {
         background-color: transparent !important;
+    }
+
+    .emoji-container {
+        position: relative;
+    }
+
+    .emoji-context-menu-container {
+        position: absolute;
+        left: -300%;
+        right: -300%;
+        transform: translate(var(--shift), -1.65em);
+        z-index: 800;
+    }
+
+    .emoji-context-menu {
+        width: fit-content;
+        margin: auto;
+        border-radius: 10px;
+        backdrop-filter: blur(15px);
+        background-color: rgb(0, 0, 0, 0.3);
+        height: 1.95em;
+        outline: none;
+    }
+
+    .remove-brr .emoji-context-menu {
+        border-bottom-right-radius: 0px;
+    }
+
+    .emoji-context-menu li {
+        display: inline-block;
+    }
+
+    .emoji-context-menu .bottom-arrow:after {
+        content: "";
+        transform: translate(calc(var(--shift) * -1));
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        width: 0;
+        height: 0;
+        backdrop-filter: blur(15px);
+        border-top: 10px solid rgb(0, 0, 0, 0.5);
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
     }
 
     /* Debug */

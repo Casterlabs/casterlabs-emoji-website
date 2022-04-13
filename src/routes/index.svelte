@@ -104,7 +104,11 @@
                         {/if}
                     </div>
                 {:else}
-                    <h1 class="title is-3">Pick an emoji...</h1>
+                    <h1 class="title is-2">Pick an emoji...</h1>
+                    <h2 class="subtitle is-5">(try right clicking or hold tap to change the skin color)</h2>
+                    <br />
+                    <br />
+                    <br />
                 {/if}
             </div>
             <div class="column is-narrow">

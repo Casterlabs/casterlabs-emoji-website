@@ -929,6 +929,10 @@
         user-select: none;
     }
 
+    .picker-container * {
+        user-select: none;
+    }
+
     .picker-container.enable-custom-emojis {
         width: 313px !important;
     }

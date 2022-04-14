@@ -229,19 +229,24 @@
                                 <span class="emoji-container">
                                     <a
                                         on:click={() => {
-                                            let variation = emoji.variations[userVariations[emoji.variations.def.sequence] || "def"];
+                                            if (userVariations[emoji.variations.def.sequence]) {
+                                                let variation = emoji.variations[userVariations[emoji.variations.def.sequence]];
 
-                                            if (!variation.assets[emojiProvider].supported) {
-                                                variation = emoji.variations.def;
+                                                if (!variation.assets[emojiProvider].supported) {
+                                                    variation = emoji.variations.def;
+                                                }
+
+                                                input(emoji, variation);
+                                            } else {
+                                                // The user needs to select a color first.
+                                                openContextMenu(emoji);
                                             }
-
-                                            input(emoji, variation);
                                         }}
                                         on:contextmenu={(e) => {
                                             e.preventDefault();
                                             openContextMenu(emoji);
                                         }}
-                                        data-long-press-delay="1000"
+                                        data-long-press-delay="750"
                                     >
                                         <img
                                             on:load={(loadEvent) => {
@@ -268,22 +273,24 @@
                                         >
                                             <!-- svelte-ignore a11y-autofocus -->
                                             <ul class="emoji-context-menu" on:blur={closeContextMenu} autofocus tabindex="0">
-                                                {#each Object.entries(emoji.variations) as [key, variation]}
-                                                    {#if key != "def" && variation.assets[emojiProvider].supported}
-                                                        <li>
-                                                            <a
-                                                                on:click={() => {
-                                                                    userVariations[emoji.variations.def.sequence] = variation.sequence;
-                                                                    closeContextMenu();
-                                                                    save();
-                                                                    input(emoji, variation);
-                                                                }}
-                                                            >
-                                                                <img src={variation.assets[emojiProvider].svgUrl} alt="" title={emoji.name} class="emoji" />
-                                                            </a>
-                                                        </li>
-                                                    {/if}
-                                                {/each}
+                                                <span class="inner-container">
+                                                    {#each Object.entries(emoji.variations) as [key, variation]}
+                                                        {#if key != "def" && variation.assets[emojiProvider].supported}
+                                                            <li>
+                                                                <a
+                                                                    on:click={() => {
+                                                                        userVariations[emoji.variations.def.sequence] = variation.sequence;
+                                                                        closeContextMenu();
+                                                                        save();
+                                                                        input(emoji, variation);
+                                                                    }}
+                                                                >
+                                                                    <img src={variation.assets[emojiProvider].svgUrl} alt="" title={emoji.name} class="emoji" />
+                                                                </a>
+                                                            </li>
+                                                        {/if}
+                                                    {/each}
+                                                </span>
                                                 <span class="bottom-arrow" />
                                             </ul>
                                         </span>
@@ -992,6 +999,14 @@
         background-color: rgb(0, 0, 0, 0.3);
         height: 1.95em;
         outline: none;
+    }
+
+    .emoji-context-menu .inner-container {
+        height: 100%;
+        width: 100%;
+        /* overflow-x: hidden;
+        overflow-y: auto; */
+        display: inline-block;
     }
 
     .remove-brr .emoji-context-menu {

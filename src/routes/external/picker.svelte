@@ -75,7 +75,7 @@
         };
 
         console.debug("Picked:", variation?.sequence || emoji.name, payload);
-        window.parent.postMessage(payload);
+        window.parent.postMessage(payload, "*");
     }
 
     function save() {

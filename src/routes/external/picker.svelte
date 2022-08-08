@@ -224,7 +224,7 @@
                             {#each Object.values(emoji.variations) as flag}
                                 {#if flag.assets[emojiProvider].supported}
                                     <a on:click={() => input(emoji, flag)}>
-                                        <img src={flag.assets[emojiProvider].svgUrl || flag.assets[emojiProvider].pngUrl} alt="" title={flag.name} class="emoji" />
+                                        <img src={flag.assets[emojiProvider].svgUrl || flag.assets[emojiProvider].pngUrl} alt="" title={flag.name} class="emoji" loading="lazy" />
                                     </a>
                                 {/if}
                             {/each}

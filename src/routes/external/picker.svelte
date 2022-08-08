@@ -41,7 +41,7 @@
                 contextMenuOffset = 0;
             }
 
-            console.log("width:", width, "elementRootLeft: ", elementRootLeft, "parentWidth:", parentWidth, "contextMenuOffset:", contextMenuOffset);
+            // console.log("width:", width, "elementRootLeft: ", elementRootLeft, "parentWidth:", parentWidth, "contextMenuOffset:", contextMenuOffset);
         }
     }
 
@@ -52,7 +52,7 @@
         if (supportedVariations.length > 2) {
             // If an emoji only has one variation, we don't need to show the context menu. (`def` is a duplicate entry)
             contextMenuOpenOn = emoji.variations.def.sequence;
-            console.debug("context", emoji.variations.def);
+            // console.debug("context", emoji.variations.def);
         } else {
             // Go ahead and send an input.
             input(emoji, emoji.variations.def);
@@ -74,7 +74,7 @@
             isCustom: isCustom
         };
 
-        console.debug("Picked:", variation?.sequence || emoji.name, payload);
+        // console.debug("Picked:", variation?.sequence || emoji.name, payload);
         window.parent.postMessage(payload, "*");
     }
 
@@ -96,15 +96,14 @@
             userVariations = JSON.parse(localStorage.getItem("cl_emoji:variations")) || {};
         } catch (ignored) {}
 
-        console.debug("Mounted!");
+        // console.debug("Mounted!");
 
         const listOfCategoryNames = await jsonApiRequest("https://api.casterlabs.co/v3/emojis/categories");
-        // console.debug("Categories:", listOfCategoryNames);
 
         if (customEmojisUrl) {
             try {
                 customEmojiData = await jsonApiRequest(customEmojisUrl);
-                console.debug("Custom Emojis:", customEmojiData);
+                // console.debug("Custom Emojis:", customEmojiData);
 
                 currentCategoryId = "custom";
                 currentCategoryName = customEmojiData.name;
@@ -120,8 +119,8 @@
                 });
                 categories = categories; // Trick svelte, again.
             } catch (e) {
-                console.error("An error occurred whilst loading custom emojis:", e);
-                alert("An error occurred whilst loading custom emojis. Please check the console for more details.");
+                // console.error("An error occurred whilst loading custom emojis:", e);
+                alert("An error occurred whilst loading custom emojis. Please check the // console for more details.");
                 enableCustomEmojis = false;
             }
         }
@@ -143,7 +142,7 @@
                 emoji.variations = variationsMap;
             }
 
-            console.debug("Category:", categoryInfo);
+            // console.debug("Category:", categoryInfo);
 
             categories.push(categoryInfo);
             categories = categories; // Trick svelte.
@@ -193,7 +192,7 @@
             if (currentCategoryId != scrolledCategoryId) {
                 currentCategoryId = scrolledCategoryId;
                 currentCategoryName = scrolledCategoryName;
-                console.debug("Scrolled into view:", currentCategoryId);
+                // console.debug("Scrolled into view:", currentCategoryId);
             }
         }
     }
@@ -238,7 +237,7 @@
                                             const userVariation = userVariations[emoji.variations.def.sequence];
                                             const hasVariations = Object.values(emoji.variations).length > 2; // DEF and the emoji itself.
 
-                                            console.log(hasVariations, userVariation);
+                                            // console.log(hasVariations, userVariation);
                                             if (hasVariations && !userVariation) {
                                                 // The user needs to select a color first.
                                                 openContextMenu(emoji);
@@ -266,7 +265,7 @@
                                             on:load={(loadEvent) => {
                                                 loadEvent.target.parentElement.addEventListener("long-press", (e) => {
                                                     e.preventDefault();
-                                                    console.debug("Long press!");
+                                                    // console.debug("Long press!");
                                                     openContextMenu(emoji);
                                                 });
                                             }}

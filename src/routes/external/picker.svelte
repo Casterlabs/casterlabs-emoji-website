@@ -158,7 +158,7 @@
 
     function switchCategory(category) {
         const categoryElement = document.querySelector(`#category-${category}`);
-        const firstChildBelowTheTitle = categoryElement.querySelector(".emoji");
+        const firstChildBelowTheTitle = categoryElement.querySelector("a");
 
         firstChildBelowTheTitle.scrollIntoView({
             behavior: "smooth",
@@ -222,15 +222,21 @@
                         {#if emoji.identifier == "flag"}
                             <!-- Flags need to be handled differently -->
                             {#each Object.values(emoji.variations) as flag}
-                                {#if flag.assets[emojiProvider].supported}
-                                    <a on:click={() => input(emoji, flag)}>
-                                        <img src={flag.assets[emojiProvider].svgUrl || flag.assets[emojiProvider].pngUrl} alt="" title={flag.name} class="emoji" loading="lazy" />
+                                {#if emojiProvider == "system" || flag.assets[emojiProvider].supported}
+                                    <a on:click={() => input(emoji, flag)} title={flag.name}>
+                                        {#if emojiProvider == "system"}
+                                            <span class="system-emoji">
+                                                {flag.sequence}
+                                            </span>
+                                        {:else}
+                                            <img src={flag.assets[emojiProvider].svgUrl || flag.assets[emojiProvider].pngUrl} alt={flag.name} class="emoji" loading="lazy" />
+                                        {/if}
                                     </a>
                                 {/if}
                             {/each}
                         {:else}
                             <!-- Check and make sure the emoji is supported before we try to load it. -->
-                            {#if emoji.variations.def.assets[emojiProvider].supported}
+                            {#if emojiProvider == "system" || emoji.variations.def.assets[emojiProvider].supported}
                                 <span class="emoji-container">
                                     <a
                                         on:click={() => {
@@ -260,21 +266,27 @@
                                             openContextMenu(emoji);
                                         }}
                                         data-long-press-delay="750"
+                                        title={emoji.name}
                                     >
-                                        <img
-                                            on:load={(loadEvent) => {
-                                                loadEvent.target.parentElement.addEventListener("long-press", (e) => {
-                                                    e.preventDefault();
-                                                    // console.debug("Long press!");
-                                                    openContextMenu(emoji);
-                                                });
-                                            }}
-                                            src={emoji.variations[userVariations[emoji.variations.def.sequence] || "def"]?.assets[emojiProvider].svgUrl || emoji.variations["def"].assets[emojiProvider].svgUrl}
-                                            alt=""
-                                            title={emoji.name}
-                                            class="emoji"
-                                            loading="lazy"
-                                        />
+                                        {#if emojiProvider == "system"}
+                                            <span class="system-emoji">
+                                                {emoji.variations[userVariations[emoji.variations.def.sequence] || "def"]?.sequence}
+                                            </span>
+                                        {:else}
+                                            <img
+                                                on:load={(loadEvent) => {
+                                                    loadEvent.target.parentElement.addEventListener("long-press", (e) => {
+                                                        e.preventDefault();
+                                                        // console.debug("Long press!");
+                                                        openContextMenu(emoji);
+                                                    });
+                                                }}
+                                                src={emoji.variations[userVariations[emoji.variations.def.sequence] || "def"]?.assets[emojiProvider].svgUrl || emoji.variations["def"].assets[emojiProvider].svgUrl}
+                                                alt={emoji.name}
+                                                class="emoji"
+                                                loading="lazy"
+                                            />
+                                        {/if}
                                     </a>
 
                                     {#if contextMenuOpenOn == emoji.variations.def.sequence}
@@ -283,8 +295,8 @@
                                             <ul class="emoji-context-menu" on:blur={closeContextMenu} autofocus tabindex="0">
                                                 <span class="inner-container">
                                                     {#each Object.entries(emoji.variations) as [key, variation]}
-                                                        {#if key != "def" && variation.assets[emojiProvider].supported}
-                                                            <li>
+                                                        {#if key != "def"}
+                                                            <li class:hidden={emojiProvider != "system" && !variation.assets[emojiProvider].supported}>
                                                                 <a
                                                                     on:click={() => {
                                                                         userVariations[emoji.variations.def.sequence] = variation.sequence;
@@ -292,8 +304,15 @@
                                                                         save();
                                                                         input(emoji, variation);
                                                                     }}
+                                                                    title={emoji.name}
                                                                 >
-                                                                    <img src={variation.assets[emojiProvider].svgUrl} alt="" title={emoji.name} class="emoji" />
+                                                                    {#if emojiProvider == "system"}
+                                                                        <span class="system-emoji">
+                                                                            {variation.sequence}
+                                                                        </span>
+                                                                    {:else}
+                                                                        <img src={variation.assets[emojiProvider].svgUrl} alt={emoji.name} class="emoji" />
+                                                                    {/if}
                                                                 </a>
                                                             </li>
                                                         {/if}
@@ -490,6 +509,7 @@
         --text-color: white;
         --background-color: transparent;
         --section-height: 35px;
+        --emoji-size: 1.5em;
     }
 
     .category-name {
@@ -502,16 +522,24 @@
     }
 
     .emoji {
-        --size: 1.5em;
-
         object-fit: contain;
         margin: 2px;
-        width: var(--size);
-        height: var(--size);
+        width: var(--emoji-size);
+        height: var(--emoji-size);
         z-index: 750;
         image-rendering: pixelated;
         image-rendering: -webkit-optimize-contrast;
         image-rendering: -moz-crisp-edges;
+    }
+
+    .system-emoji {
+        display: inline-block;
+        overflow: hidden;
+        text-align: center;
+        width: var(--emoji-size);
+        height: var(--emoji-size);
+        z-index: 750;
+        letter-spacing: -4px;
     }
 
     #emojis {

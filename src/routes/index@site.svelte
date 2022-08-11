@@ -74,9 +74,13 @@
             <div class="column" style="margin-top: 30px;">
                 {#if pickedEmoji}
                     <div id="emoji-viewer">
-                        {#if pickedEmoji.variation.assets[emojiProvider].svgUrl || pickedEmoji.variation.assets[emojiProvider].pngUrl}
-                            <img src={pickedEmoji.variation.assets[emojiProvider].svgUrl || pickedEmoji.variation.assets[emojiProvider].pngUrl} alt="Emoji" />
-                        {/if}
+                        <div class="emoji-big">
+                            {#if pickedEmoji.variation.assets[emojiProvider]?.svgUrl || pickedEmoji.variation.assets[emojiProvider]?.pngUrl}
+                                <img src={pickedEmoji.variation.assets[emojiProvider].svgUrl || pickedEmoji.variation.assets[emojiProvider].pngUrl} alt="Emoji" />
+                            {:else}
+                                {pickedEmoji.variation.sequence}
+                            {/if}
+                        </div>
 
                         <h1 class="title is-3">{pickedEmoji.emoji.name}</h1>
                         <h2 class="subtitle is-6">Since Emoji {pickedEmoji.variation.since}</h2>
@@ -96,10 +100,10 @@
                         <br />
                         <br />
 
-                        {#if pickedEmoji.variation.assets[emojiProvider].svgUrl}
+                        {#if pickedEmoji.variation.assets[emojiProvider]?.svgUrl}
                             <a href={pickedEmoji.variation.assets[emojiProvider].svgUrl} target="_blank" class="button is-primary"> SVG </a>
                         {/if}
-                        {#if pickedEmoji.variation.assets[emojiProvider].pngUrl}
+                        {#if pickedEmoji.variation.assets[emojiProvider]?.pngUrl}
                             <a href={pickedEmoji.variation.assets[emojiProvider].pngUrl} target="_blank" class="button is-primary"> PNG </a>
                         {/if}
                     </div>
@@ -122,7 +126,7 @@
                         <option value="noto-emoji">Noto Emoji</option>
                         <option value="openmoji">Openmoji</option>
                         <option value="sensa-emoji">Sensa Emoji</option>
-                        <!-- <option value="system">System</option> -->
+                        <option value="system">System</option>
                     </select>
                 </div>
             </div>
@@ -149,10 +153,15 @@
         font-weight: 600 !important;
     }
 
-    #emoji-viewer img {
-        object-fit: fill;
+    #emoji-viewer .emoji-big {
         min-width: 96px;
         max-width: 18%;
         max-height: 15%;
+        margin: auto;
+        font-size: 96px;
+    }
+
+    #emoji-viewer .emoji-big img {
+        object-fit: fill;
     }
 </style>

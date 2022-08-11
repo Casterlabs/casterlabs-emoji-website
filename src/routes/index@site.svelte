@@ -59,7 +59,7 @@
 
         View the <a href="https://documenter.getpostman.com/view/11546462/UVe9S9qm" target="_blank">postman docs</a> to see how you can use the api.
         <br />
-        Emoji picker docs coming soon.
+        Emoji picker docs coming soon. (For now, see <a href="/example.html" target="_blank">/example.html</a>)
 
         <br />
         <br />

@@ -60,8 +60,11 @@
         View the <a href="https://documenter.getpostman.com/view/11546462/UVe9S9qm" target="_blank">postman docs</a> to see how you can use the api.
         <br />
         Emoji picker docs coming soon. (For now, see <a href="/example.html" target="_blank">/example.html</a>)
-
         <br />
+        See the Java SDK on <a href="https://github.com/Casterlabs/EmojiApi" target="_blank">GitHub</a>.
+        <br />
+        See the source for this website <a href="https://github.com/Casterlabs/casterlabs-emoji-website" target="_blank">GitHub</a> as well.
+
         <br />
         <br />
         <br />

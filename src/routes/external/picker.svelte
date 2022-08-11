@@ -47,7 +47,7 @@
 
     function openContextMenu(emoji) {
         const supportedVariations = Object.values(emoji.variations) //
-            .filter((variation) => variation.assets[emojiProvider].supported);
+            .filter((variation) => emojiProvider == "system" || variation.assets[emojiProvider].supported);
 
         if (supportedVariations.length > 2) {
             // If an emoji only has one variation, we don't need to show the context menu. (`def` is a duplicate entry)

@@ -129,6 +129,7 @@
                         <option value="noto-emoji">Noto Emoji</option>
                         <option value="openmoji">Openmoji</option>
                         <option value="sensa-emoji">Sensa Emoji</option>
+                        <option value="toss-face">Toss Face</option>
                         <option value="system">System</option>
                     </select>
                 </div>
